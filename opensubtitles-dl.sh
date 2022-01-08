@@ -156,6 +156,7 @@ main() {
     mlist="$(get_imdb_id "${_INPUT_NAME:-}")"
     mid="$(fzf_prompt "$mlist")"
 
+    [[ -z "${mid:-}" ]] && print_error "IMDb ID not found!"
     slist="$(get_subtitle_list "$mid")"
     sid="$(fzf_prompt "$slist")"
 
