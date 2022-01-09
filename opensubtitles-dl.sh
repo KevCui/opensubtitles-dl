@@ -9,6 +9,8 @@
 #/   -n <name>               TV series or Movie name
 #/   -l <lang>               optional, language
 #/                           e.g.: eng, spa, fre...
+#/                           default: eng
+#/   -a                      optional, download all available subtitles
 #/   -d                      enable debug mode
 #/   -h | --help             display this help message
 
@@ -35,13 +37,16 @@ set_var() {
 
 set_args() {
     expr "$*" : ".*--help" > /dev/null && usage
-    while getopts ":hdl:n:" opt; do
+    while getopts ":hdal:n:" opt; do
         case $opt in
             n)
                 _INPUT_NAME="$OPTARG"
                 ;;
             l)
                 _LANG="$OPTARG"
+                ;;
+            a)
+                _DOWNLOAD_ALL=true
                 ;;
             d)
                 set -x
@@ -126,7 +131,7 @@ get_imdb_id() {
     for i in $(seq 1 "$len"); do
         u="$(head -"$i" <<< "$ul" | tail -1)"
         n="$(head -"$i" <<< "$nl" | tail -1)"
-        if [[ "$(grep -c $u <<< "$res")" != "1" ]]; then
+        if [[ "$(grep -c "$u" <<< "$res")" != "1" ]]; then
             res+="$u"
             echo "[$u] $n"
         fi
@@ -135,9 +140,11 @@ get_imdb_id() {
 
 download_subtitle() {
     # $1: subtitle id
-    "$_CURL" "$_DOWNLOAD_URL{$1}" -o "$_SCRIPT_PATH/${1}.zip"
-    "$_UNZIP" -o "${1}.zip" -x "*.nfo"
-    rm -f "${1}.zip"
+    while read -r id; do
+        "$_CURL" "$_DOWNLOAD_URL{$id}" -o "$_SCRIPT_PATH/${id}.zip"
+        "$_UNZIP" -o "${id}.zip" -x "*.nfo"
+        rm -f "${id}.zip"
+    done <<< "$1"
 }
 
 fzf_prompt() {
@@ -158,7 +165,11 @@ main() {
 
     [[ -z "${mid:-}" ]] && print_error "IMDb ID not found!"
     slist="$(get_subtitle_list "$mid")"
-    sid="$(fzf_prompt "$slist")"
+    if [[ -z "${_DOWNLOAD_ALL:-}" ]]; then
+        sid="$(fzf_prompt "$slist")"
+    else
+        sid="$(awk -F ']' '{print $1}' <<< "$slist" | awk -F '[' '{print $2}')"
+    fi
 
     [[ -z "${sid:-}" ]] && print_error "Subtitle not found!"
     download_subtitle "$sid"
