@@ -31,8 +31,6 @@ set_var() {
     _SEARCH_URL="$_HOST/en/search/sublanguageid-"
     _GOOGLE_SEARCH="https://www.google.com"
     _DOWNLOAD_URL="https://dl.opensubtitles.org/en/download/sub/"
-
-    _SCRIPT_PATH=$(dirname "$(realpath "$0")")
 }
 
 set_args() {
@@ -141,7 +139,7 @@ get_imdb_id() {
 download_subtitle() {
     # $1: subtitle id
     while read -r id; do
-        "$_CURL" "$_DOWNLOAD_URL{$id}" -o "$_SCRIPT_PATH/${id}.zip"
+        "$_CURL" "$_DOWNLOAD_URL{$id}" -o "./${id}.zip"
         "$_UNZIP" -o "${id}.zip" -x "*.nfo"
         rm -f "${id}.zip"
     done <<< "$1"
