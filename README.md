@@ -1,5 +1,3 @@
-        # echo "$_DOWNLOAD_URL${id}"
-        # exit 1
 # opensubtitles-dl
 
 > Download subtitles from opensubtitles.org
