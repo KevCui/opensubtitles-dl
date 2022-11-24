@@ -114,7 +114,7 @@ get_imdb_id() {
     r="$("$_CURL" -sSL "$_GOOGLE_SEARCH/search?q=${1// /+}+site%3Aimdb.com%2Ftitle" \
         -A 'google')"
     c="$("$_PUP" 'h3 div attr{class}' <<< "$r")"
-    ul="$("$_PUP" '#main :parent-of(h3)' <<< "$r" \
+    ul="$("$_PUP" '#main :parent-of(:parent-of(:parent-of(h3)))' <<< "$r" \
         | grep href \
         | sed -E 's/.*.imdb.com\/title\/tt//;s/\/.*//')"
     nl="$("$_PUP" '#main :parent-of(h3)' <<< "$r" \
