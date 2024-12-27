@@ -3,10 +3,11 @@
 # Download subtitles from opensubtitles.org
 #
 #/ Usage:
-#/   ./opensubtitles-dl.sh [-n <name>] [-l <lang>] [-d]
+#/   ./opensubtitles-dl.sh [-n <name>|-i <id>] [-l <lang>] [-d]
 #/
 #/ Options:
 #/   -n <name>               TV series or Movie name
+#/   -i <id>                 IMDb ID
 #/   -l <lang>               optional, language
 #/                           e.g.: eng, spa, fre...
 #/                           default: eng
@@ -35,8 +36,11 @@ set_var() {
 
 set_args() {
     expr "$*" : ".*--help" > /dev/null && usage
-    while getopts ":hdal:n:" opt; do
+    while getopts ":hdal:i:n:" opt; do
         case $opt in
+            i)
+                _INPUT_ID="$OPTARG"
+                ;;
             n)
                 _INPUT_NAME="$OPTARG"
                 ;;
@@ -157,11 +161,16 @@ main() {
     set_args "$@"
     set_var
 
-    [[ -z "${_INPUT_NAME:-}" ]] && print_error "Missing -n <name>!"
-    mlist="$(get_imdb_id "${_INPUT_NAME:-}")"
-    mid="$(fzf_prompt "$mlist")"
+    [[ -z "${_INPUT_NAME:-}" && -z "${_INPUT_ID:-}" ]] \
+        && print_error "Missing -n <name> or -m <id>!"
+    if [[ -z "${_INPUT_ID:-}" ]]; then
+        mlist="$(get_imdb_id "${_INPUT_NAME:-}")"
+        mid="$(fzf_prompt "$mlist")"
+        [[ -z "${mid:-}" ]] && print_error "IMDb ID not found!"
+    else
+        mid="${_INPUT_ID}"
+    fi
 
-    [[ -z "${mid:-}" ]] && print_error "IMDb ID not found!"
     slist="$(get_subtitle_list "$mid")"
     if [[ -z "${_DOWNLOAD_ALL:-}" ]]; then
         sid="$(fzf_prompt "$slist")"

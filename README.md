@@ -27,10 +27,11 @@ I need a simple CLI subtitle downloader and it should work without using API key
 
 ```
 Usage:
-  ./opensubtitles-dl.sh [-n <name>] [-l <lang>] [-d]
+  ./opensubtitles-dl.sh [-n <name>|-i <id>] [-l <lang>] [-d]
 
 Options:
   -n <name>               TV series or Movie name
+  -i <id>                 IMDb ID
   -l <lang>               optional, language
                           e.g.: eng, spa, fre...
                           default: eng
@@ -85,6 +86,12 @@ Archive:  8911224.zip
 
 Archive:  8911223.zip
   inflating: The.Witcher.S02E01.1080p.WEB-DL.AAC.2.0.x264-Telly_track3_[eng].srt
+```
+
+- Download subtitle using a known IMDb ID, for example, "Squid Game" Season 2 Episode 7:
+
+```
+$ ./opensubtitles-dl.sh -i tt35153959
 ```
 
 ---
