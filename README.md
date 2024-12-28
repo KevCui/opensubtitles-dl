@@ -45,7 +45,7 @@ Options:
 - Download Spanish subtitle of "The Witcher" Season 2 Episode 1:
 
 ```
-$ ./opensubtitles-dl.sh -n 'the witcher s02e01' -l spa
+$ ./opensubtitles-dl.sh -n 'the witcher s2.e1' -l spa
 > [11277244] "The Witcher" A Grain of Truth (TV Episode 2021) - IMDb
   [5180504] The Witcher (TV Series 2019– ) - Episodes - IMDb
   [8071662] "The Witcher" The End's Beginning (TV Episode 2019) - IMDb
@@ -65,7 +65,7 @@ Archive:  8913673.zip
 - Download all English subtitles of "The Witcher" Season 2 Episode 1:
 
 ```
-$ ./opensubtitles-dl.sh -n 'the witcher s02e01' -l a
+$ ./opensubtitles-dl.sh -n 'the witcher s2.e1' -l a
 > [11277244] "The Witcher" A Grain of Truth (TV Episode 2021) - IMDb
   [5180504] The Witcher (TV Series 2019– ) - Episodes - IMDb
   [8071662] "The Witcher" The End's Beginning (TV Episode 2019) - IMDb
