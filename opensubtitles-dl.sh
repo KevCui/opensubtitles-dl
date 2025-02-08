@@ -162,7 +162,7 @@ main() {
     set_var
 
     [[ -z "${_INPUT_NAME:-}" && -z "${_INPUT_ID:-}" ]] \
-        && print_error "Missing -n <name> or -m <id>!"
+        && print_error "Missing -n <name> or -i <id>!"
     if [[ -z "${_INPUT_ID:-}" ]]; then
         mlist="$(get_imdb_id "${_INPUT_NAME:-}")"
         mid="$(fzf_prompt "$mlist")"
