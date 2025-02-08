@@ -27,10 +27,11 @@ set_var() {
     _PUP="$(command -v pup)" || command_not_found "pup"
     _FZF="$(command -v fzf)" || command_not_found "fzf"
     _UNZIP="$(command -v unzip)" || command_not_found "unzip"
+    _JQ="$(command -v jq)" || command_not_found "jq"
 
     _HOST="https://www.opensubtitles.org"
     _SEARCH_URL="$_HOST/en/search/sublanguageid-"
-    _GOOGLE_SEARCH="https://www.google.com"
+    _IMDB_SEARCH="https://v3.sg.media-imdb.com/suggestion/x"
     _DOWNLOAD_URL="https://dl.opensubtitles.org/en/download/sub/"
 }
 
@@ -114,36 +115,15 @@ get_subtitle_list () {
 
 get_imdb_id() {
     # $1: media name
-    local r c ul nl len u n res
-    r="$("$_CURL" -sSL "$_GOOGLE_SEARCH/search?q=${1// /+}+site%3Aimdb.com%2Ftitle" \
-        -A 'google')"
-    c="$("$_PUP" 'h3 div attr{class}' <<< "$r")"
-    ul="$("$_PUP" '#main :parent-of(:parent-of(:parent-of(h3)))' <<< "$r" \
-        | grep href \
-        | sed -E 's/.*.imdb.com\/title\/tt//;s/\/.*//')"
-    nl="$("$_PUP" '#main :parent-of(h3)' <<< "$r" \
-        | grep "$c" -A 1 \
-        | grep -v "$c" \
-        | grep -v -- '--' \
-        | awk '{$1=$1};1' \
-        | sed -E 's/&#34;/"/g;s/&#39;/'\''/g')"
-
-    len="$(wc -l <<< "$nl")"
-    res=""
-    for i in $(seq 1 "$len"); do
-        u="$(head -"$i" <<< "$ul" | tail -1)"
-        n="$(head -"$i" <<< "$nl" | tail -1)"
-        if [[ "$(grep -c "$u" <<< "$res")" != "1" ]]; then
-            res+="$u"
-            echo "[$u] $n"
-        fi
-    done
+    local r
+    r="$("$_CURL" -sSL "$_IMDB_SEARCH/${1// /+}.json")"
+    "$_JQ" -r '.d.[] | "[\(.id)][\(.y)] \(.l)"' <<< "$r"
 }
 
 download_subtitle() {
     # $1: subtitle id
     while read -r id; do
-        "$_CURL" "$_DOWNLOAD_URL{$id}" -o "./${id}.zip"
+        "$_CURL" "$_DOWNLOAD_URL${id}" -o "./${id}.zip"
         "$_UNZIP" -o "${id}.zip" -x "*.nfo"
         rm -f "${id}.zip"
     done <<< "$1"

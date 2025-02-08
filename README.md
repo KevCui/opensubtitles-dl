@@ -20,6 +20,7 @@ I need a simple CLI subtitle downloader and it should work without using API key
 - [pup](https://github.com/EricChiang/pup)
 - [fzf](https://github.com/junegunn/fzf)
 - [unzip](http://infozip.sourceforge.net/UnZip.html#Downloads)
+- [jq](https://jqlang.org/download/)
 
 ## How to use
 
