@@ -88,7 +88,7 @@ command_not_found() {
 get_subtitle_list () {
     # $1: id
     local d ul nl len n l
-    d="$("$_CURL" -sSL "${_SEARCH_URL}${_LANG:-eng}/imdbid-${1}")"
+    d="$("$_CURL" -A x -sSL "${_SEARCH_URL}${_LANG:-eng}/imdbid-${1}")"
     ul="$("$_PUP" '.bnone attr{href}' <<< "$d" \
         | sed -E 's/.*\/subtitles\///' \
         | awk -F '/' '{print $1}')"
