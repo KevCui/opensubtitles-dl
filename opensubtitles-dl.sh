@@ -3,11 +3,10 @@
 # Download subtitles from opensubtitles.org
 #
 #/ Usage:
-#/   ./opensubtitles-dl.sh [-n <name>|-i <id>] [-l <lang>] [-d]
+#/   ./opensubtitles-dl.sh [-n <name>] [-l <lang>] [-a] [-d]
 #/
 #/ Options:
 #/   -n <name>               TV series or Movie name
-#/   -i <id>                 IMDb ID
 #/   -l <lang>               optional, language
 #/                           e.g.: eng, spa, fre...
 #/                           default: eng
@@ -85,6 +84,19 @@ command_not_found() {
     print_error "$1 command not found!"
 }
 
+get_imdb_tt() {
+    # $1: TV series or movie name
+    "$_CURL" -sS 'https://www.perplexity.ai/rest/sse/perplexity_ask' -X POST \
+        -A x -b '__cf_bm=x' \
+        -H 'Accept: text/event-stream' \
+        -H 'Accept-Language: en-US,en;q=0.5' \
+        -H 'content-type: application/json' \
+        --data-raw '{"params":{"last_backend_uuid":"","read_write_token":"","attachments":[],"language":"","timezone":"","search_focus":"internet","sources":["web"],"frontend_uuid":"","mode":"concise","model_preference":"turbo","is_related_query":false,"is_sponsored":false,"prompt_source":"user","query_source":"","is_incognito":true,"time_from_first_type":1,"local_search_enabled":false,"use_schematized_api":true,"send_back_text_in_streaming_api":false,"supported_block_use_cases":["answer_modes","media_items","knowledge_cards","inline_entity_cards","place_widgets","finance_widgets","prediction_market_widgets","sports_widgets","flight_status_widgets","news_widgets","shopping_widgets","jobs_widgets","search_result_widgets","inline_images","inline_assets","placeholder_cards","diff_blocks","inline_knowledge_cards","entity_group_v2","refinement_filters","canvas_mode","maps_preview","answer_tabs","price_comparison_widgets","preserve_latex","generic_onboarding_widgets","in_context_suggestions"],"client_coordinates":null,"mentions":[],"skip_search_enabled":true,"is_nav_suggestions_disabled":false,"followup_source":"link","source":"default","always_search_override":false,"override_no_search":false,"should_ask_for_mcp_tool_confirmation":true,"force_enable_browser_agent":false,"supported_features":[""],"version":""},"query_str":"imdb link id for:'"$1"'. tt part, only return its value in plain text"}' \
+        | grep --line-buffered '"diff_block": {"field": "markdown_block"' \
+        | sed 's/^data: //' \
+        | "$_JQ" -j -r --unbuffered '.blocks[0].diff_block.patches[0].value | (.chunks?[0] // .)'
+}
+
 get_subtitle_list () {
     # $1: id
     local d ul nl len n l
@@ -113,13 +125,6 @@ get_subtitle_list () {
     fi
 }
 
-get_imdb_id() {
-    # $1: media name
-    local r
-    r="$("$_CURL" -sSL "$_IMDB_SEARCH/${1// /+}.json")"
-    "$_JQ" -r '.d.[] | "[\(.id)][\(.y)] \(.l)"' <<< "$r"
-}
-
 download_subtitle() {
     # $1: subtitle id
     while read -r id; do
@@ -141,16 +146,11 @@ main() {
     set_args "$@"
     set_var
 
-    [[ -z "${_INPUT_NAME:-}" && -z "${_INPUT_ID:-}" ]] \
-        && print_error "Missing -n <name> or -i <id>!"
-    if [[ -z "${_INPUT_ID:-}" ]]; then
-        mlist="$(get_imdb_id "${_INPUT_NAME:-}")"
-        mid="$(fzf_prompt "$mlist")"
-        [[ -z "${mid:-}" ]] && print_error "IMDb ID not found!"
-    else
-        mid="${_INPUT_ID}"
-    fi
+    [[ -z "${_INPUT_NAME:-}" ]] \
+        && print_error "Missing TV series or Movie name!"
 
+    mid="$(get_imdb_tt "$_INPUT_NAME")"
+    print_info "IMDb ID: $mid"
     slist="$(get_subtitle_list "$mid")"
     if [[ -z "${_DOWNLOAD_ALL:-}" ]]; then
         sid="$(fzf_prompt "$slist")"
